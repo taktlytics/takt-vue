@@ -6,6 +6,11 @@ import { createTakt } from '@vskstudio/takt-core'
 // spelling so `tagged="false"` stays off.
 const truthy = (v: string | null): boolean => v !== 'false' && v !== '0'
 
+const splitList = (v: string | null): string[] | undefined => {
+  const items = (v ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+  return items.length > 0 ? items : undefined
+}
+
 // Built lazily: referencing HTMLElement at module load throws under SSR (Node),
 // so the class is created only when registration runs in a DOM environment. This
 // is a plain custom element. It wires core imperatively and pulls in no Vue
@@ -18,18 +23,10 @@ export function createTaktAnalyticsElement(): CustomElementConstructor {
       const attr = (name: string): string | null => this.getAttribute(name)
 
       const sampleRateAttr = attr('sample-rate')
-      const queryParamsAttr = attr('query-params')
-      const queryParams = queryParamsAttr
-        ? queryParamsAttr.split(',').map((s) => s.trim()).filter(Boolean)
-        : undefined
-      const excludeAttr = attr('exclude')
-      const exclude = excludeAttr
-        ? excludeAttr.split(',').map((s) => s.trim()).filter(Boolean)
-        : undefined
-      const redactRoutesAttr = attr('redact-routes')
-      const redactRoutes = redactRoutesAttr
-        ? redactRoutesAttr.split(',').map((s) => s.trim()).filter(Boolean)
-        : undefined
+      const queryParams = splitList(attr('query-params'))
+      const exclude = splitList(attr('exclude'))
+      const redactRoutes = splitList(attr('redact-routes'))
+      const fileExtensions = splitList(attr('file-extensions'))
 
       const takt = createTakt({
         domain: attr('domain') ?? undefined,
@@ -41,13 +38,14 @@ export function createTaktAnalyticsElement(): CustomElementConstructor {
         ...(this.hasAttribute('debug') ? { debug: truthy(attr('debug')) } : {}),
         ...(sampleRateAttr !== null && Number.isFinite(parseFloat(sampleRateAttr)) ? { sampleRate: parseFloat(sampleRateAttr) } : {}),
         ...(this.hasAttribute('track-query') ? { trackQuery: truthy(attr('track-query')) } : {}),
-        ...(queryParams && queryParams.length > 0 ? { queryParams } : {}),
-        ...(exclude && exclude.length > 0 ? { exclude } : {}),
-        ...(redactRoutes && redactRoutes.length > 0 ? { redactRoutes } : {}),
+        ...(this.hasAttribute('redact-undecodable-paths') ? { redactUndecodablePaths: truthy(attr('redact-undecodable-paths')) } : {}),
+        ...(queryParams ? { queryParams } : {}),
+        ...(exclude ? { exclude } : {}),
+        ...(redactRoutes ? { redactRoutes } : {}),
       })
       if (truthy(attr('spa'))) this.disposers.push(takt.enableSpa())
       if (this.hasAttribute('outbound')) this.disposers.push(takt.enableOutbound())
-      if (this.hasAttribute('files')) this.disposers.push(takt.enableFiles())
+      if (this.hasAttribute('files')) this.disposers.push(takt.enableFiles(fileExtensions))
       // `track-404` aligne la graphie sur les autres attributs multi-mots ;
       // `track404` reste accepté pour ne pas casser les intégrations existantes.
       if (this.hasAttribute('track-404') || this.hasAttribute('track404')) {

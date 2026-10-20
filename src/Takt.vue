@@ -39,6 +39,7 @@ interface Props {
   /** Transform the URL before it is sent (dev/controlled use only). */
   scrubUrl?: (url: string) => string
   redactRoutes?: string[]
+  redactUndecodablePaths?: boolean
   routeTemplates?: boolean
   routeTemplate?: RouteTemplateResolver
   router?: RouterLike
@@ -56,6 +57,7 @@ const props = withDefaults(defineProps<Props>(), {
   // Vue caste un prop Boolean absent en `false` ; sans ce défaut le kill-switch s'activerait tout seul.
   enabled: true,
   debug: false,
+  redactUndecodablePaths: true,
   routeTemplates: false,
 })
 
@@ -63,9 +65,9 @@ const store = provideTakt()
 let disposers: VoidFunction[] = []
 
 onMounted(() => {
-  const { domain, endpoint, scriptOrigin, respectDnt, excludeLocalhost, spa, outbound, files, track404, enabled, debug, sampleRate, trackQuery, queryParams, exclude, scrubUrl, tagged, redactRoutes, routeTemplates, router } = props
+  const { domain, endpoint, scriptOrigin, respectDnt, excludeLocalhost, spa, outbound, files, track404, enabled, debug, sampleRate, trackQuery, queryParams, exclude, scrubUrl, tagged, redactRoutes, redactUndecodablePaths, routeTemplates, router } = props
   const routeTemplate = resolveRouteTemplate(routeTemplates, props.routeTemplate, router)
-  const takt = createTakt({ domain, endpoint, scriptOrigin, respectDnt, excludeLocalhost, enabled, debug, sampleRate, trackQuery, queryParams, exclude, scrubUrl, redactRoutes, routeTemplates, routeTemplate })
+  const takt = createTakt({ domain, endpoint, scriptOrigin, respectDnt, excludeLocalhost, enabled, debug, sampleRate, trackQuery, queryParams, exclude, scrubUrl, redactRoutes, redactUndecodablePaths, routeTemplates, routeTemplate })
   if (spa) disposers.push(takt.enableSpa())
   if (outbound) disposers.push(takt.enableOutbound())
   if (files) disposers.push(takt.enableFiles(Array.isArray(files) ? files : undefined))
