@@ -8,7 +8,7 @@ const truthy = (v: string | null): boolean => v !== 'false' && v !== '0'
 
 // Built lazily: referencing HTMLElement at module load throws under SSR (Node),
 // so the class is created only when registration runs in a DOM environment. This
-// is a plain custom element — it wires core imperatively and pulls in no Vue
+// is a plain custom element. It wires core imperatively and pulls in no Vue
 // runtime, keeping the self-contained /element bundle tiny.
 export function createTaktAnalyticsElement(): CustomElementConstructor {
   return class TaktAnalyticsElement extends HTMLElement {

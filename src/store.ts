@@ -4,7 +4,7 @@ import type { createTakt } from '@vskstudio/takt-core'
 /** The Analytics instance type, derived from the core factory (core does not export it). */
 export type TaktInstance = ReturnType<typeof createTakt>
 
-// shallowRef, not ref: the Analytics instance is opaque — deep reactive
+// shallowRef, not ref: the Analytics instance is opaque. Deep reactive
 // proxying would both waste work and break identity (`===`) comparisons.
 const TAKT_KEY: InjectionKey<ShallowRef<TaktInstance | null>> = Symbol('takt')
 

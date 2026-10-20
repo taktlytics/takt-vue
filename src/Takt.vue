@@ -28,7 +28,7 @@ interface Props {
   /** Master kill-switch: set to `false` to disable all tracking without removing the component. */
   enabled?: boolean
   debug?: boolean
-  /** Fraction of sessions to track (0–1). Defaults to 1 (all sessions). */
+  /** Fraction of sessions to track (0 to 1). Defaults to 1 (all sessions). */
   sampleRate?: number
   /** Include the query string in tracked URLs. */
   trackQuery?: boolean

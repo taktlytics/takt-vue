@@ -3,7 +3,7 @@
 // SSR-safety contract: importing any public entry on the server must touch no
 // browser globals (window, document, location, customElements). This runs in a
 // real Node environment (no jsdom) so any module-load access to those globals
-// throws and fails the test — locking in the deferral to onMounted and the
+// throws and fails the test, locking in the deferral to onMounted and the
 // customElements guard in the element entry.
 import { describe, it, expect, vi } from 'vitest'
 
@@ -38,7 +38,7 @@ describe('SSR safety (node environment, no DOM globals)', () => {
     expect(mod.vTaktEvent).toBeDefined()
   })
 
-  it('imports the element entry — registration is a no-op without customElements', async () => {
+  it('imports the element entry: registration is a no-op without customElements', async () => {
     const mod = await import('../src/element/index')
     expect(typeof mod.defineTaktElement).toBe('function')
     expect(() => mod.defineTaktElement()).not.toThrow()
