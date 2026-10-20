@@ -30,7 +30,7 @@ A thin, SSR-safe Vue 3 layer over [`@vskstudio/takt-core`](https://www.npmjs.com
 pnpm add @vskstudio/takt-vue @vskstudio/takt-core
 ```
 
-`vue` (`^3.3.0`) and `@vskstudio/takt-core` (`>=0.12.2`) are peer dependencies.
+`vue` (`^3.3.0`) and `@vskstudio/takt-core` (`>=0.12.3`) are peer dependencies.
 
 ## Quick start: component + composable
 
