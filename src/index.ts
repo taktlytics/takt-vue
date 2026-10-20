@@ -8,9 +8,9 @@ export { TaktPlugin, type TaktPluginOptions } from './plugin'
 export { vueRouterTemplate, type RouterLike } from './routeTemplate'
 export { vTaktEvent, type TaktEventParams } from './directives/vTaktEvent'
 export type { TaktInstance } from './store'
-export type { Config, RouteTemplateResolver } from '@vskstudio/takt-core'
+export type { Config, RouteTemplateResolver, TrackOptions, Payload } from '@vskstudio/takt-core'
 
-export { createStats, PublicApiError, badgeUrl, embedUrl, optOut, optIn, isOptedOut } from '@vskstudio/takt-core'
+export { createStats, PublicApiError, badgeUrl, embedUrl, normalizeHost, optOut, optIn, isOptedOut } from '@vskstudio/takt-core'
 export type {
   BadgeOptions,
   EmbedOptions,

@@ -176,6 +176,36 @@ describe('<takt-analytics> boot behavior', () => {
     expect(enableTagged).not.toHaveBeenCalled()
   })
 
+  it('redact-undecodable-paths="false" or "0" forwards false; absent forwards nothing', async () => {
+    await boot({ domain: 'exemple.fr', 'redact-undecodable-paths': 'false' })
+    expect(createTakt).toHaveBeenCalledWith(expect.objectContaining({ redactUndecodablePaths: false }))
+
+    vi.clearAllMocks()
+    document.body.innerHTML = ''
+    await boot({ domain: 'exemple.fr', 'redact-undecodable-paths': '0' })
+    expect(createTakt).toHaveBeenCalledWith(expect.objectContaining({ redactUndecodablePaths: false }))
+
+    vi.clearAllMocks()
+    document.body.innerHTML = ''
+    await boot({ domain: 'exemple.fr' })
+    expect(createTakt).not.toHaveBeenCalledWith(expect.objectContaining({ redactUndecodablePaths: expect.anything() }))
+  })
+
+  it('file-extensions forwards the trimmed list to enableFiles when files is present', async () => {
+    await boot({ domain: 'exemple.fr', files: '', 'file-extensions': 'pdf, zip ,' })
+    expect(enableFiles).toHaveBeenCalledWith(['pdf', 'zip'])
+  })
+
+  it('files without file-extensions calls enableFiles with no list', async () => {
+    await boot({ domain: 'exemple.fr', files: '' })
+    expect(enableFiles).toHaveBeenCalledWith(undefined)
+  })
+
+  it('file-extensions alone does not enable file tracking', async () => {
+    await boot({ domain: 'exemple.fr', 'file-extensions': 'pdf' })
+    expect(enableFiles).not.toHaveBeenCalled()
+  })
+
   it('tagged="false" does NOT call enableTagged', async () => {
     await boot({ domain: 'exemple.fr', tagged: 'false' })
     expect(enableTagged).not.toHaveBeenCalled()

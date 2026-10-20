@@ -10,6 +10,10 @@ describe('consent re-exports', () => {
     expect(root.isOptedOut).toBe(core.isOptedOut)
   })
 
+  it('the package root re-exports normalizeHost from core', () => {
+    expect(root.normalizeHost).toBe(core.normalizeHost)
+  })
+
   it('the directives entry re-exports isOptedOut next to optOut and optIn', () => {
     expect(directives.optOut).toBe(core.optOut)
     expect(directives.optIn).toBe(core.optIn)
