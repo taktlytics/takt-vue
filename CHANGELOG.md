@@ -1,5 +1,11 @@
 # @vskstudio/takt-vue
 
+## 0.10.2
+
+### Patch Changes
+
+- 7248420: Depends on takt-core 0.12.3, which stops the takt.auto.js bundle from overwriting window.takt.
+
 ## 0.10.1
 
 ### Patch Changes
