@@ -122,6 +122,16 @@ describe('<Takt>', () => {
     )
   })
 
+  it('forwards redactUndecodablePaths to the core', () => {
+    mount(Takt, { props: { domain: 'exemple.fr', redactUndecodablePaths: false } })
+    expect(createTakt).toHaveBeenCalledWith(expect.objectContaining({ redactUndecodablePaths: false }))
+  })
+
+  it('defaults redactUndecodablePaths to true when the prop is absent (Vue would cast it to false)', () => {
+    mount(Takt, { props: { domain: 'exemple.fr' } })
+    expect(createTakt).toHaveBeenCalledWith(expect.objectContaining({ redactUndecodablePaths: true }))
+  })
+
   it('defaults routeTemplates to false when the prop is absent', () => {
     mount(Takt, { props: { domain: 'exemple.fr' } })
     expect(createTakt).toHaveBeenCalledWith(expect.objectContaining({ routeTemplates: false, routeTemplate: undefined }))

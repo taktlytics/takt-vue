@@ -85,6 +85,11 @@ describe('TaktPlugin', () => {
     expect(createTakt).toHaveBeenCalledWith({ domain: 'exemple.fr', redactRoutes: ['/verify/:token'], routeTemplates: true, routeTemplate })
   })
 
+  it('forwards redactUndecodablePaths to the core through the options', () => {
+    install(fakeApp(), { domain: 'exemple.fr', redactUndecodablePaths: false })
+    expect(createTakt).toHaveBeenCalledWith({ domain: 'exemple.fr', redactUndecodablePaths: false })
+  })
+
   it('derives routeTemplate from the router option when routeTemplates is on', () => {
     const app = fakeApp()
     const router = { currentRoute: { value: { matched: [{ path: '/users' }, { path: '/users/:id' }] } } }
