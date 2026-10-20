@@ -19,14 +19,14 @@ const track = vi.mocked(core.track)
 
 /** Drive the bare directive lifecycle hooks against a node, as Vue would. */
 function bind(el: HTMLElement, value: { name: string; props?: Record<string, string>; revenue?: { amount: string; currency: string } }) {
-  // @ts-expect-error — minimal binding shape; only `value` is read.
+  // @ts-expect-error: minimal binding shape; only `value` is read.
   vTaktEvent.mounted?.(el, { value })
   return {
     update: (next: typeof value) => {
-      // @ts-expect-error — minimal binding shape.
+      // @ts-expect-error: minimal binding shape.
       vTaktEvent.updated?.(el, { value: next })
     },
-    // @ts-expect-error — unmounted only reads the element.
+    // @ts-expect-error: unmounted only reads the element.
     destroy: () => vTaktEvent.unmounted?.(el, {}),
   }
 }

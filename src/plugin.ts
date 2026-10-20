@@ -30,7 +30,7 @@ declare module 'vue' {
  * Vue plugin: `app.use(TaktPlugin, options?)`. Always registers the global
  * `v-takt-event` directive. When `options` are supplied, also bootstraps a
  * single browser instance (pageview + autocapture), so a `<Takt>` component is
- * optional. Init is deferred off the server — `install` may run during SSR.
+ * optional. Init is deferred off the server, `install` may run during SSR.
  */
 export const TaktPlugin: Plugin<[TaktPluginOptions?]> = {
   install(app: App, options?: TaktPluginOptions) {

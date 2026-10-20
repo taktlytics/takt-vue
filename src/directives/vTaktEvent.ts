@@ -36,7 +36,7 @@ type Bound = HTMLElement & {
  * <button v-takt-event="{ name: 'Signup', props: { plan: 'pro' } }">Subscribe</button>
  * ```
  *
- * Reactive — updating the bound value changes the tracked name/props/revenue,
+ * Reactive: updating the bound value changes the tracked name/props/revenue,
  * and the click listener is removed on unmount. At click time it tracks through
  * the active instance published by `<Takt>` / `TaktPlugin`, falling back to
  * core's default instance for an `init()`-driven setup.
