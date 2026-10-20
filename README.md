@@ -30,7 +30,7 @@ A thin, SSR-safe Vue 3 layer over [`@vskstudio/takt-core`](https://www.npmjs.com
 pnpm add @vskstudio/takt-vue @vskstudio/takt-core
 ```
 
-`vue` (`^3.3.0`) and `@vskstudio/takt-core` (`>=0.9.0`) are peer dependencies.
+`vue` (`^3.3.0`) and `@vskstudio/takt-core` (`>=0.12.0`) are peer dependencies.
 
 ## Quick start: component + composable
 
@@ -93,9 +93,10 @@ All props below except `router` are forwarded to the core; `router` only feeds `
 | `sampleRate` | `number` | `1` | Fraction of sessions to track (0 to 1) |
 | `trackQuery` | `boolean` | `false` | Include the query string in tracked URLs |
 | `queryParams` | `string[]` | n/a | Query parameters to preserve when `trackQuery` is false |
-| `exclude` | `string[]` | n/a | Path prefixes never tracked, e.g. `['/app', '/account']` (segment-bounded, checked at send time) |
+| `exclude` | `string[]` | n/a | Path prefixes never tracked, e.g. `['/app', '/account']`. Segment-bounded, case-insensitive, trailing slash ignored, matched on the percent-decoded path, checked at send time |
 | `scrubUrl` | `(url: string) => string` | n/a | Transform each URL before it is sent: the page URL and the `props.url` of outbound clicks and file downloads. Function prop only, it cannot be set as an HTML attribute on `<takt-analytics>` |
-| `redactRoutes` | `string[]` |  | Sensitive route patterns: a matching path is sent as the pattern, e.g. `['/verify/:token']` turns `/verify/abc` into `/verify/:token` (see [Route redaction](#route-redaction)) |
+| `redactRoutes` | `string[]` |  | Sensitive route patterns: a matching path is sent as the pattern, e.g. `['/verify/:token']` or `['/verify/{token}']` turns `/verify/abc` into `/verify/:token` (see [Route redaction](#route-redaction)) |
+| `redactUndecodablePaths` | `boolean` | `true` | A path that cannot be decoded is sent as `/[redacted]` when a route is configured. `false` decodes it leniently instead (an invalid escape stays as written and the path is still matched), as takt-core-php does |
 | `routeTemplates` | `boolean` | `false` | Send every page as its route template instead of its real path |
 | `routeTemplate` | `() => string \| null \| undefined` |  | Resolver of the current route template, read only when `routeTemplates` is on |
 | `router` | `RouterLike` |  | A Vue Router instance; when `routeTemplates` is on and no `routeTemplate` is given, `vueRouterTemplate(router)` is used |
@@ -167,7 +168,7 @@ createApp(App)
   .mount('#app')
 ```
 
-Options are the core `Config` (including `debug`, `redactRoutes`, `routeTemplates` and `routeTemplate`) plus `outbound`, `files`, `spa` (default `true`), `track404` and `router`. `tagged` is component-only. The instance is created synchronously during install and lives for the app's lifetime (its autocapture disposers are not retained; use `<Takt>` when you need scoped teardown).
+Options are the core `Config` (including `debug`, `redactRoutes`, `redactUndecodablePaths`, `routeTemplates` and `routeTemplate`) plus `outbound`, `files`, `spa` (default `true`), `track404` and `router`. `tagged` is component-only. The instance is created synchronously during install and lives for the app's lifetime (its autocapture disposers are not retained; use `<Takt>` when you need scoped teardown).
 
 Installing without options registers only the directive and the widget components. Use `<Takt>` for instance lifecycle in that case. Instance bootstrapping is also skipped on the server.
 
@@ -181,7 +182,9 @@ createApp(App)
   .mount('#app')
 ```
 
-Patterns accept the Vue Router syntax (`:param`, `:param?`, `*`, `**`) as well as the bracket syntax (`[param]`, `[[optional]]`, `[...rest]`). The rule also covers same-origin referrers, outbound and download links, and 404 paths.
+Patterns accept the Vue Router syntax (`:param`, `:param?`, `*`, `**`), the bracket syntax (`[param]`, `[[optional]]`, `[...rest]`) and the brace syntax of takt-core-php (`{param}`, `{param?}`, `{param<regex>}`). A `<regex>` constraint must fit a restricted grammar: printable ASCII, literals, `.`, the `\d \w \s` classes, quantifiers with at most two variable ones (`*`, `+`, `?`, `{n,}`, `{n,m}`), and at most 100 characters. A route whose constraint falls outside it, or that is too costly to match, masks every path it would match as `/[redacted]`.
+
+Matching is case-insensitive, decodes percent-encoding (up to five passes), normalizes repeated slashes and dot segments, and ignores matrix parameters (`;x=1`). A path that cannot be decoded is masked as `/[redacted]` when a route is configured, unless `redactUndecodablePaths` is `false`. When a path is masked, its query string and fragment are dropped too. The rule also covers same-origin referrers, outbound and download links, and 404 paths.
 
 For a fully private app, `routeTemplates: true` sends every page as its route template (`/users/42` becomes `/users/:id`). Pass your router and the plugin reads the matched route for you:
 
@@ -223,11 +226,13 @@ import '@vskstudio/takt-vue/element'
 | `sample-rate` | `sampleRate` | Ignored when not a number |
 | `track-query` | `trackQuery` | Only read when the attribute is present |
 | `query-params` | `queryParams` | Comma-separated list |
-| `exclude` | `exclude` | Comma-separated list |
-| `redact-routes` | `redactRoutes` | Comma-separated list of route patterns; no `routeTemplates` mode, since the element has no router |
+| `exclude` | `exclude` | Comma-separated list, same matching rules as the `exclude` prop |
+| `redact-routes` | `redactRoutes` | Comma-separated list of route patterns (brace and `<regex>` syntax included, but a constraint cannot contain a comma here, since the list splits on commas); no `routeTemplates` mode, since the element has no router |
+| `redact-undecodable-paths` | `redactUndecodablePaths` | Only read when the attribute is present; `"false"` / `"0"` decode leniently, anything else keeps the masking default |
 | `spa` | `enableSpa()` | On unless `"false"` / `"0"` |
 | `outbound` | `enableOutbound()` | Presence flag |
-| `files` | `enableFiles()` | Presence flag, no extension allowlist (use `<Takt>` for that) |
+| `files` | `enableFiles()` | Presence flag |
+| `file-extensions` | `enableFiles(list)` | Comma-separated extensions, e.g. `pdf,zip`; only read together with `files`, and the core default list applies when absent |
 | `track-404` | `enable404()` | Presence flag; legacy spelling `track404` still accepted |
 | `tagged` | `enableTagged()` | Present and not `"false"` / `"0"` |
 
