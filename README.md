@@ -30,7 +30,7 @@ A thin, SSR-safe Vue 3 layer over [`@vskstudio/takt-core`](https://www.npmjs.com
 pnpm add @vskstudio/takt-vue @vskstudio/takt-core
 ```
 
-`vue` (`^3.3.0`) and `@vskstudio/takt-core` (`>=0.12.0`) are peer dependencies.
+`vue` (`^3.3.0`) and `@vskstudio/takt-core` (`>=0.12.1`) are peer dependencies.
 
 ## Quick start: component + composable
 
@@ -95,7 +95,7 @@ All props below except `router` are forwarded to the core; `router` only feeds `
 | `queryParams` | `string[]` | n/a | Query parameters to preserve when `trackQuery` is false |
 | `exclude` | `string[]` | n/a | Path prefixes never tracked, e.g. `['/app', '/account']`. Segment-bounded, case-insensitive, trailing slash ignored, matched on the percent-decoded path, checked at send time |
 | `scrubUrl` | `(url: string) => string` | n/a | Transform each URL before it is sent: the page URL and the `props.url` of outbound clicks and file downloads. Function prop only, it cannot be set as an HTML attribute on `<takt-analytics>` |
-| `redactRoutes` | `string[]` |  | Sensitive route patterns: a matching path is sent as the pattern, e.g. `['/verify/:token']` or `['/verify/{token}']` turns `/verify/abc` into `/verify/:token` (see [Route redaction](#route-redaction)) |
+| `redactRoutes` | `string[]` |  | Sensitive route patterns: a matching path is sent as the pattern, e.g. `['/verify/:token']` turns `/verify/abc` into `/verify/:token`, and `['/verify/{token}']` turns it into `/verify/{token}` (see [Route redaction](#route-redaction)) |
 | `redactUndecodablePaths` | `boolean` | `true` | A path that cannot be decoded is sent as `/[redacted]` when a route is configured. `false` decodes it leniently instead (an invalid escape stays as written and the path is still matched), as takt-core-php does |
 | `routeTemplates` | `boolean` | `false` | Send every page as its route template instead of its real path |
 | `routeTemplate` | `() => string \| null \| undefined` |  | Resolver of the current route template, read only when `routeTemplates` is on |
@@ -201,6 +201,8 @@ createApp(App)
 ```
 
 The same works on the component, `<Takt domain="example.com" route-templates :router="router">`. Under the hood it uses `vueRouterTemplate(router)`, exported from the package root, which returns the `path` of the deepest matched record (Vue Router already stores it as the full normalized path, e.g. `/users/:id`). Pass your own `routeTemplate` resolver to override it. The helper is typed structurally, so the package does not depend on `vue-router`. On a public site this mode merges every article into one row, so prefer `redactRoutes` there.
+
+In this mode, when the resolver returns nothing (no matched route), the page is not sent with its real path: a route covered by `redactRoutes` is sent as its pattern, and any other route as `/[redacted]`, without query or hash. Every file download is sent as `origin + /[redacted]` on any host (only the file type stays in clear, as the `extension` prop), and every referrer is reduced to `origin + /`.
 
 ## Custom element (no Vue required)
 
